@@ -59,7 +59,7 @@ def darboux_transform_mesh_par(mesh:"vedo.Mesh", center:"np.array[float]", radiu
 
         for t in triangles:
             
-            pts, faces = spherical_triangle(t[0], t[1], t[2], center, radius)
+            pts, faces = spherical_triangle(t[0], t[1], t[2], center, radius, type)
 
      
             meshes.append(vedo.Mesh([pts, faces]).color(clr).alpha(alph))
@@ -109,7 +109,7 @@ def average_normal(mesh:"vedo.Mesh"):
     return avg_normal
 
 # Parametriced triangle
-def spherical_triangle(p1:"np.array[float]", p2:"np.array[float]", p3:"np.array[float]", center:"np.array[float]", radius:float):
+def spherical_triangle(p1:"np.array[float]", p2:"np.array[float]", p3:"np.array[float]", center:"np.array[float]", radius:float, type:int):
     """Create a parametriced triangle with vertices p1, p2, p3
 
     return a list of points and a list of faces  
@@ -123,7 +123,7 @@ def spherical_triangle(p1:"np.array[float]", p2:"np.array[float]", p3:"np.array[
 
     # Create the points
 
-    pts = [ darboux_transform(p1 + u*(p2 - p1) + v*(p3 - p1), center, radius, 1)  \
+    pts = [ darboux_transform(p1 + u*(p2 - p1) + v*(p3 - p1), center, radius, type)  \
            for u in U for v in V if u + v <= 1.001]
     
     faces = []
@@ -212,10 +212,17 @@ def darboux_transform_mesh(mesh:"vedo.Mesh", center_DS:"np.array[float]", radius
 
 
 # ---------------------------Test MESH--------------------------------  
-mesh = vedo.load("Models/obj_pq/conical1.obj")
+mesh = vedo.load("Models/hall.obj")
 
-center_DS = np.mean(mesh.points(), axis=0) - 10*average_normal(mesh) 
-radius_DS = 25
+# Quas
+# Hyperbollic - 20*n, 30 rad
+# Elliptic -23*n, 8 rad
+
+# Triangular
+# Elliptic - 40*n, 20 rad
+center_DS = np.mean(mesh.points(), axis=0) - 36 *average_normal(mesh) 
+print(center_DS)
+radius_DS = 20
 
 # Fail triak 
 # env1, env2 = darboux_transform_mesh(mesh, center_DS, radius_DS)
@@ -223,21 +230,29 @@ radius_DS = 25
 
 DS = vedo.Sphere(center_DS, radius_DS).color('pink').alpha(0.3)
 
-darboux_sph = vedo.Sphere(pos=center_DS, r=radius_DS).color('pink').alpha(0.5)
 mesh2 = darboux_transform_mesh_par(mesh, center_DS, radius_DS, 1)
 
-darboux_pts = [ darboux_transform(pt, center_DS, radius_DS, 1) for pt in mesh.points()]
-mesh3 = vedo.Mesh([darboux_pts, mesh.faces()]).color('green').alpha(0.8)
+mesh3 = darboux_transform_mesh_par(mesh, center_DS, radius_DS, 2)
 
 merge_mesh = vedo.merge(mesh2).clean()
 
 merge_mesh.subsample(0.00001).wireframe(False)
 
-vedo.write(merge_mesh, "DT_quad_mesh.obj")
-vedo.write(mesh, "quad_mesh.obj")
+merge_mesh2 = vedo.merge(mesh3).clean()
+merge_mesh2.subsample(0.00001).wireframe(False)
+
+# Quads
+# vedo.write(merge_mesh, "DT_quad_mesh.obj")
+# vedo.write(mesh, "quad_mesh.obj")
+# vedo.write(DS, "Darboux_Sphere.obj")
+
+# Tri mesh
+vedo.write(merge_mesh, "DT_tri_mesh.obj")
+vedo.write(merge_mesh2, "DT_tri_mesh_2.obj")
+vedo.write(mesh, "tri_mesh.obj")
 vedo.write(DS, "Darboux_Sphere.obj")
 
-vedo.show(DS, merge_mesh, mesh)
+vedo.show(DS, mesh, merge_mesh, merge_mesh2)
 
 # ---------------------------Test TRIANGLE--------------------------------
 
