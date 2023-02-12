@@ -226,8 +226,6 @@ radius_DS = 20
 
 # Fail triak 
 # env1, env2 = darboux_transform_mesh(mesh, center_DS, radius_DS)
-
-
 DS = vedo.Sphere(center_DS, radius_DS).color('pink').alpha(0.3)
 
 mesh2 = darboux_transform_mesh_par(mesh, center_DS, radius_DS, 1)
