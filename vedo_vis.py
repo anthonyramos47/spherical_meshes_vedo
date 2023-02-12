@@ -1,16 +1,6 @@
 import vedo 
 import numpy as np
 
-# Triangle 
-#points = [[0,0,0], [1,0,0], [0,1,0]] 
-#faces = [[0,1,2]]
-
-# Create a mesh object
-#mesh = vedo.Mesh([points, faces])
-
-
-
-
 
 # Darboux transformation for a point
 def darboux_transform(pt:"np.array[float]", center:"np.array[float]", radius:float, type:int):
