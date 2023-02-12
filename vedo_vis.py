@@ -137,71 +137,9 @@ def spherical_triangle(p1:"np.array[float]", p2:"np.array[float]", p3:"np.array[
     return np.array(pts), np.array(faces)
 
 
-def spherical_pol(pts, center_DS, radius_DS, clr:"list[str]"=["silver", "gold"], alph:float=0.6):
-    
-    # Define points in the envelope 
-    env_1 = [darboux_transform(pt, center_DS, radius_DS, 1) for pt in pts]
-    env_2 = [darboux_transform(pt, center_DS, radius_DS, 2) for pt in pts]
-
-    # Define the envelope
-    envelope = np.concatenate((env_1, env_2), axis=0)
-
-    # Fit sphere of the envelope
-    fit_sphere = vedo.fit_sphere(envelope[:4])
-
-    if fit_sphere is None:   
-        return None
-    
-    # Define two sphere one per side of the envelope
-    sphere = vedo.Sphere(fit_sphere.center, fit_sphere.radius, res=60 ).color(clr[0]).alpha(alph)
-    sphere2 = vedo.Sphere(fit_sphere.center, fit_sphere.radius, res=60).color(clr[1]).alpha(alph)
-
-    #print(f"points: {np.array(pts)}")
-    
-    # Cut spheres
-    for i in range(len(pts)):
-        
-        normal = unit(np.cross(pts[i] - center_DS, pts[(i+1) % len(pts)] - center_DS))
-        normal2 = unit(np.cross(env_2[i] - center_DS, env_2[(i+1) % len(pts)] - center_DS))
-        sphere = sphere.cut_with_plane(center_DS, normal, invert=False)
-        sphere2 = sphere2.cut_with_plane(center_DS, normal2, invert=False)
-        
-    return sphere, sphere2
-
-def darboux_transform_mesh(mesh:"vedo.Mesh", center_DS:"np.array[float]", radius_DS:float):
-    """Transform a mesh using the Darboux transform
-
-    """
-
-    # Get the points and faces
-    points = mesh.points()
-    faces = mesh.faces()
-
-    # Envelop 1
-    sph_env_1 = []
-
-    # Envelop 2
-    sph_env_2 = []
-
-    for j in range(len(faces)):
-        # Get the points of the face
-        
-        f_pts = [ points[i] for i in faces[j]]
-
-        #print(f"Indices in face: {faces[j]}")
-
-        sph1, sph2 = spherical_pol(f_pts, center_DS, radius_DS, clr=['blue', 'yellow'], alph=0.5)
-
-        if sph1 is not None:
-            sph_env_1.append(sph1)
-
-        if sph2 is not None:
-            sph_env_2.append(sph2)
-    
-    return sph_env_1, sph_env_2
 
 
-# ---------------------------Test MESH--------------------------------  
+# ---------------------------Quad MESH--------------------------------  
 mesh = vedo.load("Models/obj_pq/conical1.obj")
 
 center_DS = np.mean(mesh.points(), axis=0) - 10*average_normal(mesh) 
